@@ -1,0 +1,4 @@
+new brach: new
+1. Xong phaanf them giỏ hàng trong trang chi tiết
+2. Coi lại phần xuất hiện love-> hiển thị ảnh hưởng của login với trang detail
+3. Xuất ra cho đẹp nữa
