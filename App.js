@@ -61,7 +61,7 @@ function MyStackOfAdmin(){
 export default function App() {
   return (
     <NavigationContainer>
-    <Stack.Navigator initialRouteName="SendNotification" screenOptions={{
+    <Stack.Navigator initialRouteName="Login" screenOptions={{
         headerStyle: {
           backgroundColor: '#f4511e',
         },

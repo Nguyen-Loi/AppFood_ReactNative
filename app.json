@@ -17,7 +17,7 @@
       [
         "expo-notifications",
         {
-          "icon": "./local/path/to/myNotificationIcon.png",
+          "icon": "./assets/icon.png",
           "color": "#ffffff",
           "sounds": ["./local/path/to/mySound.wav", "./local/path/to/myOtherSound.wav"],
           "mode": "production"

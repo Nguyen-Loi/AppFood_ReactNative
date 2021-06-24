@@ -67,9 +67,9 @@ const AccountAdmin = (props) => {
                     </TouchableOpacity>
                   
                     {/* Suppport */}
-                    <TouchableOpacity onPress={()=>props.navigation.navigate('Support')}>
+                    <TouchableOpacity onPress={()=>props.navigation.navigate('SendNotification')}>
                         <View style={styles.c1}>
-                            <Text style={styles.t1}><FontAwesome name='medkit' size={23} color='black' />   Hỗ trợ</Text>
+                            <Text style={styles.t1}><FontAwesome name='bell' size={23} color='black' />  Gửi thông báo</Text>
                             <Divider style={{ backgroundColor: 'black', marginTop: 20 }} />
                         </View>
                     </TouchableOpacity>

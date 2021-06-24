@@ -1,14 +1,27 @@
-import { size } from "lodash";
-import React, { useState } from "react";
-import { ImageBackground, StyleSheet, TextInput, View, Image, Button,  Keyboard } from "react-native";
+
+import React, { useState, useEffect, useRef } from "react";
+import { StyleSheet, TextInput, View, Image, Button,  Keyboard } from "react-native";
 import { Input, Avatar } from 'react-native-elements';
 import { ScrollView } from "react-native-gesture-handler";
-import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import Constants from 'expo-constants';
+import * as Notifications from 'expo-notifications';
 import firebase from '../../database/firebase';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
-
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: false,
+      shouldSetBadge: false,
+  }),
+});
 const CreateFood = ({ navigation }) => {
+  //Token
+  const [expoPushToken, setExpoPushToken] = useState('');
+  const [notification, setNotification] = useState(false);
+  const notificationListener = useRef();
+  const responseListener = useRef();
+  //State data
   const [state, setState] = useState({
     name: '',
     linkImage: '',
@@ -20,7 +33,23 @@ const CreateFood = ({ navigation }) => {
   const handleChangeText = (name, value) => {
     setState({ ...state, [name]: value })
   }
-  const saveNewFood = async () => {
+  useEffect(() => {
+    registerForPushNotificationsAsync().then(token => setExpoPushToken(token));
+
+    notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
+        setNotification(notification);
+    });
+
+    responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
+        console.log(response);
+    });
+
+    return () => {
+        Notifications.removeNotificationSubscription(notificationListener.current);
+        Notifications.removeNotificationSubscription(responseListener.current);
+    };
+}, []);
+  const saveNewFood = async (name, price) => {
     if (state.name === '' || state.linkImage === '' || state.price === ''
       || state.sold === '' || state.description === '') {
       alert('Bạn không được để trống!');
@@ -37,6 +66,7 @@ const CreateFood = ({ navigation }) => {
           amount: state.amount,
           createdAt: new Date().toLocaleDateString()
         })
+        await schedulePushNotification('🎉 Đã có món ăn mới' , name+'\nGiá ưu đãi: '+price);
         navigation.navigate('FoodAdmin');
       } catch (error) {
         console.log(error);
@@ -60,12 +90,52 @@ const CreateFood = ({ navigation }) => {
 
     </ScrollView>
     <View style={styles.sButton}>
-    <Button color='red' title='Thêm món ăn' onPress={() => saveNewFood()} />
+    <Button color='red' title='Thêm món ăn' onPress={() => saveNewFood(state.name, state.price)} />
   </View>
   </KeyboardAwareScrollView>
   )
 };
+async function schedulePushNotification(name, price) {
+  await Notifications.scheduleNotificationAsync({
+      content: {
+          title: name,
+          body: price,
+          data: { data: 'goes here' },
+      },
+      trigger: { seconds: 2 },
+  });
+}
+//Handle token
+async function registerForPushNotificationsAsync() {
+  let token;
+  if (Constants.isDevice) {
+      const { status: existingStatus } = await Notifications.getPermissionsAsync();
+      let finalStatus = existingStatus;
+      if (existingStatus !== 'granted') {
+          const { status } = await Notifications.requestPermissionsAsync();
+          finalStatus = status;
+      }
+      if (finalStatus !== 'granted') {
+          alert('Failed to get push token for push notification!');
+          return;
+      }
+      token = (await Notifications.getExpoPushTokenAsync()).data;
+      console.log(token);
+  } else {
+      alert('Must use physical device for Push Notifications');
+  }
 
+  if (Platform.OS === 'android') {
+      Notifications.setNotificationChannelAsync('default', {
+          name: 'default',
+          importance: Notifications.AndroidImportance.MAX,
+          vibrationPattern: [0, 250, 250, 250],
+          lightColor: '#FF231F7C',
+      });
+  }
+
+  return token;
+}
 const styles = StyleSheet.create({
   sT1: {
     color: 'white',

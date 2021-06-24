@@ -34,7 +34,7 @@ const SendNotification = () => {
      const [titleAlert, setTitleAlert] = useState();
     //Send data
     const _sendRequest = async (title, body) => {
-        if(title.length<5||body.length<5){
+        if(title.length<3||body.length<5){
             setTitleAlert('Bạn không được để trống');
             setnIcon('✖');
             setColorAlert('red');
@@ -45,7 +45,7 @@ const SendNotification = () => {
             setnIcon('✔');
             setColorAlert('green');
             toggleAlert();
-            await schedulePushNotification('📬 ' + title, ' 😍😍😍 '+body);
+            await schedulePushNotification('📬 ' + title, ' 😍 '+body);
         }
       
     }

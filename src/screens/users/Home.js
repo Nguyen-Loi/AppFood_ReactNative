@@ -6,6 +6,7 @@ import { Divider, Card, ListItem, Avatar } from 'react-native-elements';
 import firebase from '../../database/firebase';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Swiper from 'react-native-swiper';
+import * as Notifications from 'expo-notifications';
 
 const { width, height } = Dimensions.get('window');
 const Home = (props) => {
@@ -21,6 +22,16 @@ const Home = (props) => {
     }
     useEffect(() => {
         LogBox.ignoreLogs(['VirtualizedLists should never be nested']);
+        (async function () {
+            await Notifications.scheduleNotificationAsync({
+                content: {
+                    title:"🐱‍🏍 Chào mừng bạn quay trở lại" ,
+                    body: "Bạn muốn mua gì nào ?",
+                    data: { data: 'goes here' },
+                },
+                trigger: { seconds: 2 },
+            });
+        })();
         firebase.db.collection('foods')
         .onSnapshot(querySnapshot => {
             const food = [];
@@ -43,7 +54,6 @@ const Home = (props) => {
             })
             //get data form firebase
             setFood(food);
-            console.log(food);
             //sort by date
             let dateFood = food.filter(item => {
                 return item.view > 10;
