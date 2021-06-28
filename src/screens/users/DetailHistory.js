@@ -7,7 +7,8 @@ import {
     Text,
     FlatList,
     Dimensions,
-    RefreshControl
+    RefreshControl,
+    Alert
 } from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
@@ -31,6 +32,7 @@ const DetailHistory = (props) => {
         }
         setFoodFilter(foodFilter);
     });
+    setTimeout(() => onRefresh(), 100)
     //dialog
     const [visible, setVisible] = React.useState(false);
     const toggleAlert = React.useCallback(() => {
@@ -38,6 +40,7 @@ const DetailHistory = (props) => {
     }, [visible]);
     const _closeApp = () => {
         setVisible(!visible);
+        props.navigation.navigate('HistoryCart');
     }
     //set notification
     const [nIcon, setnIcon] = useState();
@@ -45,6 +48,8 @@ const DetailHistory = (props) => {
     const [color, setColor] = useState();
     const [dataCart, setDataCart] = useState([])
     const [allDataCart, setAllDataCart] = useState([])
+    //Bill
+    const [bill, setBill] = useState([])
     var userId = getUserId();
 
     const [colorAlert, setColorAlert] = useState()
@@ -88,9 +93,8 @@ const DetailHistory = (props) => {
                     })
                 });
                 setDataCart(dataCart);
-               
+
             })
-             //read all information user with cart
         ///read all information user like before
         firebase.db.collection('addToCart').onSnapshot(querySnapshot => {
             const allDataCart = [];
@@ -103,8 +107,26 @@ const DetailHistory = (props) => {
                     amountFood
                 })
             });
-           
+            setAllDataCart(allDataCart);
         })
+        //Read bill
+        firebase.db.collection('invoice')
+            .where('key', '==', props.route.params.key)
+            .onSnapshot(querySnapshot => {
+                const bill = [];
+                querySnapshot.docs.forEach(doc => {
+                    const { key, status, total, idUser, createdAt } = doc.data();
+                    bill.push({
+                        id: doc.id,
+                        idUser,
+                        key,
+                        status,
+                        total,
+                        createdAt
+                    })
+                });
+                setBill(bill);
+            })
         return () => { isMounted = false };
     }, [])
     //add to list cart for user
@@ -145,6 +167,28 @@ const DetailHistory = (props) => {
             addDataCart(idFood);
         }
     }
+    ///Cancel the bill
+    const _cancelStatus = async () => {
+        const dbRef = firebase.db.collection('invoice').doc(bill[0].id);
+        await dbRef.set({
+            idUser: bill[0].idUser,
+            total: bill[0].total,
+            status: 'Đã huỷ bỏ',
+            createdAt: bill[0].createdAt,
+            key: bill[0].key,
+        })
+        setTitle('Bạn đã huỷ đơn hàng này thành công');
+        setnIcon('✔');
+        setColorAlert('green');
+        toggleAlert();
+       
+    }
+    const _confirmCancelBill = () =>{
+        Alert.alert('Bạn có chắc muốn xoá đơn hàng này chứ', 'Are you sure? ', [
+            { text: 'Có', onPress: () => _cancelStatus() },
+            { text: 'Không', onPress: () => console.log(false) },
+        ])
+    }
     //Handle seacrch
     if (loading) {
         <Loading />
@@ -158,38 +202,43 @@ const DetailHistory = (props) => {
         <View style={styles.container}>
 
 
-            <FlatList style={{ padding: 15 }}
-                data={foodFilter}
-                refreshControl={
-                    <RefreshControl
-                        onRefresh={onRefresh}
-                    />
-                }
-                renderItem={({ item, index }) => {
-                    return (
-                        <TouchableOpacity onPress={() => props.navigation.navigate('DetailProduct', { foodId: item.id })}>
-                            <View style={styles.bookContainer}>
-                                <Avatar rounded style={styles.image} source={{ uri: (item.linkImage) }} />
-                                <View style={styles.dataContainer}>
-                                    <Text numberOfLines={1} style={styles.title}>
-                                        {item.name}
-                                    </Text>
-                                    <Text numberOfLines={4} style={styles.description}>
-                                    
-                                    </Text>
-                                    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                                        <Text style={styles.author}>đ{item.price}</Text>
-                                        <TouchableOpacity onPress={() => updateCartForUser(item.id)} style={{ marginRight: 60 }} >
-                                            <FontAwesome name='cart-plus' size={32} color='black' />
-                                        </TouchableOpacity>
-                                    </View>
+            <View style={{ flex: 12 }}>
+                <FlatList style={{ padding: 15 }}
+                    data={foodFilter}
+                    refreshControl={
+                        <RefreshControl
+                            onRefresh={onRefresh}
+                        />
+                    }
+                    renderItem={({ item, index }) => {
+                        return (
+                            <TouchableOpacity onPress={() => props.navigation.navigate('DetailProduct', { foodId: item.id })}>
+                                <View style={styles.bookContainer}>
+                                    <Avatar rounded style={styles.image} source={{ uri: (item.linkImage) }} />
+                                    <View style={styles.dataContainer}>
+                                        <Text numberOfLines={1} style={styles.title}>
+                                            {item.name}
+                                        </Text>
+                                        <Text numberOfLines={4} style={styles.description}>
 
+                                        </Text>
+                                        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                                            <Text style={styles.author}>đ{item.price}</Text>
+                                            <TouchableOpacity onPress={() => updateCartForUser(item.id)} style={{ marginRight: 60 }} >
+                                                <FontAwesome name='cart-plus' size={32} color='black' />
+                                            </TouchableOpacity>
+                                        </View>
+
+                                    </View>
                                 </View>
-                            </View>
-                        </TouchableOpacity>
-                    );
-                }}
-            />
+                            </TouchableOpacity>
+                        );
+                    }}
+                />
+            </View>
+            <TouchableOpacity style={{  backgroundColor: 'red', borderRadius: 30, margin: 20, alignItems: 'center', justifyContent: 'center', padding: 10 }} onPress={() => _confirmCancelBill()}>
+                <Text style={{ color: 'white', fontWeight: 'bold', opacity: 0.7, fontSize: 18 }}>Xoá đơn hàng</Text>
+            </TouchableOpacity>
             {/* show dialog */}
             <FancyAlert
                 visible={visible}

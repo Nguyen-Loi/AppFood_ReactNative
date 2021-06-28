@@ -1,13 +1,26 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { SafeAreaView, StyleSheet, View, Dimensions, Text } from 'react-native';
 import firebase from '../../database/firebase';
-import Loading from '../Loading';
+import DropDownPicker from 'react-native-dropdown-picker';
 import { ListItem, Avatar } from 'react-native-elements';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import { TouchableOpacity } from 'react-native';
 const { width, height } = Dimensions.get('window');
 
 const ManageCart = ({ navigation }) => {
+    //Event dropdown picker
+    const [open, setOpen] = useState(false);
+    const [value, setValue] = useState(null);
+    const [items, setItems] = useState([
+        { label: 'Đang chờ', value: 'Đang chờ' },
+        { label: 'Xác nhận', value: 'Đã xác Nhận' },
+        { label: 'Vận chuyển', value: 'Đang vận chuyển' },
+        { label: 'Thanh toán', value: 'Đã thanh toán' },
+        { label: 'Huỷ bỏ', value: 'Đã huỷ bỏ' }
+    ]);
+    //Data cart
     const [foodCart, setFoodCart] = useState([]);
+    const [all, setAll] = useState([]);
     useEffect(() => {
         firebase.db.collection('invoice')
             .orderBy('createdAt', 'desc')
@@ -27,15 +40,41 @@ const ManageCart = ({ navigation }) => {
                 });
 
                 setFoodCart(foodCart);
+                setAll(foodCart);
+               
             })
     }, [])
+    //Filter status
+    const _filterStatus =() =>{
+        var fStatus = foodCart.filter(item => 
+            item.status.match(value)
+        )
+        setAll(fStatus);
+    };
     return (
         <View style={styles.container}>
-            <View style={{ alignItems: 'center', backgroundColor: 'orange', paddingHorizontal: 20, padding: 20, justifyContent: 'center' }}>
-                <Text style={styles.tt}><FontAwesome name='shopping-cart' size={23} color='white' /> Quản lý người dùng</Text>
+            <View style={{  backgroundColor: 'orange',zIndex:2, padding: 15, flexDirection: 'row', justifyContent: 'space-around' }}>
+
+                <View style={{ flex: 7 }}>
+                    <DropDownPicker style={{ width: 300 }}
+                        open={open}
+                        value={value}
+                        items={items}
+                        setOpen={setOpen}
+                        setValue={setValue}
+                        setItems={setItems}
+                    />
+                </View>
+                <View style={{ flex: 1, paddingLeft:75, paddingTop: 5 }}>
+                    <TouchableOpacity onPress={()=>_filterStatus()}>
+                        <FontAwesome name='search' size={30} color='white' />
+                    </TouchableOpacity>
+                </View>
+
+
             </View>
             {
-                foodCart.map(item => {
+                all.map(item => {
                     return (
                         <ListItem key={item.id} bottomDivider
                             onPress={() => navigation.navigate('ManageHistoryDetail', { key: item.key, userId: item.idUser })}>
@@ -45,6 +84,7 @@ const ManageCart = ({ navigation }) => {
                                 <ListItem.Title>{item.status}</ListItem.Title>
                                 <ListItem.Subtitle style={{ paddingTop: 10, color: 'red' }}>đ{item.total}</ListItem.Subtitle>
                             </ListItem.Content>
+                            <Text>{item.createdAt}</Text>        
                             <ListItem.Chevron />
                         </ListItem>
                     )

@@ -155,6 +155,7 @@ const ManageHistoryDetail = (props) => {
         }
         setItem(getItem);
     });
+    setTimeout(() => _onRefresh(), 100)
     if (loading) {
         return (
             <Loading />
