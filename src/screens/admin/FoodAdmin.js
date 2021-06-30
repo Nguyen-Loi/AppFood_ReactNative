@@ -11,6 +11,7 @@ import _ from 'lodash';
 const FoodAdmin = (props) => {
     //Turn of waring yello componen will...
     LogBox.ignoreLogs(['componentWillReceiveProps']);
+    LogBox.ignoreLogs(['source.uri should not be an empty string']);
     const _console = _.clone(console);
     console.warn = message => {
     if (message.indexOf('componentWillReceiveProps') <= -1) {

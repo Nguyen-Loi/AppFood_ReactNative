@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, Alert, Button } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image, Alert, Button, LogBox } from 'react-native';
 import firebase from '../../database/firebase';
 import { Input, Avatar, Card } from 'react-native-elements';
 import Loading from '../Loading';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import DropDownPicker from 'react-native-dropdown-picker';
 
 const ManageFoods = (props) => {
     const initialState = {
@@ -18,7 +19,23 @@ const ManageFoods = (props) => {
     const [food, setFood] = useState();
     const [loading, setLoading] = useState(true)
 
-
+    //Event dropdown picker
+    const [open, setOpen] = useState(false);
+    const [value, setValue] = useState(null);
+    const [items, setItems] = useState([
+        { label: 'Bình dân', value: 'Bình dân' },
+        { label: 'Món nướng', value: 'Món nướng' },
+        { label: 'Hải sản', value: 'Hải sản' },   
+        { label: 'Cháo', value: 'Cháo' },
+        { label: 'Món sào', value: 'Món sào' },
+        { label: 'Lẩu', value: 'Lẩu' },
+        { label: 'Món hầm', value: 'Món hầm' },
+        { label: 'Mì', value: 'Mì' },
+        { label: 'Thức uống', value: 'Thức uống' },
+        { label: 'Trái cây', value: 'Trái cây' },
+        { label: 'Bánh tráng', value: 'Bánh tráng' },
+        { label: 'Khác', value: 'Khác' },
+    ]);
     const getFoodById = async (id) => {
         const dbRef = firebase.db.collection('foods').doc(id);
         const doc = await dbRef.get();
@@ -31,7 +48,9 @@ const ManageFoods = (props) => {
         setLoading(false);
     }
     useEffect(() => {
+        LogBox.ignoreLogs(['VirtualizedLists should never be nested']);
         getFoodById(props.route.params.foodId);
+       
     }, [])
     const handleChangeText = (name, value) => {
         setFood({ ...food, [name]: value })
@@ -48,6 +67,13 @@ const ManageFoods = (props) => {
         ])
     }
     const updateFood = async () => {
+        var dataType = '';
+        if(value!=null){
+            dataType = value; 
+        }
+        else{
+            dataType = food.type;
+        }
         const dbRef = firebase.db.collection('foods').doc(props.route.params.foodId);
         await dbRef.set({
             name: food.name,
@@ -57,6 +83,7 @@ const ManageFoods = (props) => {
             description: food.description,
             view: food.view,
             amount: food.amount,
+            type: dataType,
             createdAt: food.createdAt
         })
         setFood(initialState);
@@ -79,11 +106,14 @@ const ManageFoods = (props) => {
                 {/* body */}
                 <View style={styles.body}>
                     <Card>
-                        <View style={{ flexDirection: 'row' }}>
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                             <Text>Ngày tạo: {food.createdAt}</Text>
-                            <Text style={{ marginLeft: 64 }}>Đã bán: {food.sold}</Text>
+                            <Text>Đã bán: {food.sold}</Text>
                         </View>
-                        <Text style={{ textAlign: 'right' }}>Lượt xem: {food.view}</Text>
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                            <Text>Loại: {food.type}</Text>
+                            <Text>Lượt xem: {food.view}</Text>
+                        </View>
                     </Card>
                     <View style={{ marginTop: 20 }}>
                         <Input label="Tên món ăn" placeholder='Tên món ăn' value={food.name} autoCorrect={false} leftIcon={{ type: 'material', name: 'forum', }} onChangeText={(value) => handleChangeText('name', value)} />
@@ -95,7 +125,14 @@ const ManageFoods = (props) => {
                 </View>
                 {/* footer */}
                 <View style={styles.footer}>
-
+                    <DropDownPicker style={{ width: 320, height: 40 }}
+                        open={open}
+                        value={value}
+                        items={items}
+                        setOpen={setOpen}
+                        setValue={setValue}
+                        setItems={setItems}
+                    />
                 </View>
 
             </ScrollView>
@@ -124,7 +161,8 @@ const styles = StyleSheet.create({
         marginTop: 30
     },
     footer: {
-        flex: 0.2
+        flex: 0.2,
+        marginBottom: 20
     },
     sImage: {
         resizeMode: 'stretch',

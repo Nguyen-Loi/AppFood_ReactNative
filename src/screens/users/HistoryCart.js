@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { SafeAreaView, StyleSheet, View, Dimensions, Text } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import COLORS from '../components/colors';
 import firebase from '../../database/firebase';
 import Loading from '../Loading';
 import { ListItem, Avatar } from 'react-native-elements';
