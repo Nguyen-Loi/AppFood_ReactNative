@@ -59,13 +59,20 @@ const ManageDetailUsers = (props) => {
         ])
     }
     const updateUser = async () => {
+       var newRole = '';
+        if(value!=null){
+           newRole=value;
+        }
+        else{
+            newRole=user.role;
+        }
         const dbRef = firebase.db.collection('users').doc(props.route.params.userId);
         await dbRef.set({
             password: user.password,
             email: user.email,
             phone: user.phone,
             address: user.address,
-            role: value,
+            role: newRole,
             imageUser: user.imageUser,
         })
         setUser(initialState);

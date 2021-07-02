@@ -22,16 +22,16 @@ const Home = (props) => {
     }
     useEffect(() => {
         LogBox.ignoreLogs(['VirtualizedLists should never be nested']);
-        // (async function () {
-        //     await Notifications.scheduleNotificationAsync({
-        //         content: {
-        //             title: "🐱‍🏍 Chào mừng bạn quay trở lại",
-        //             body: "Bạn muốn mua gì nào ?",
-        //             data: { data: 'goes here' },
-        //         },
-        //         trigger: { seconds: 2 },
-        //     });
-        // })();
+        (async function () {
+            await Notifications.scheduleNotificationAsync({
+                content: {
+                    title: "🐱‍🏍 Chào mừng bạn quay trở lại",
+                    body: "Bạn muốn mua gì nào ?",
+                    data: { data: 'goes here' },
+                },
+                trigger: { seconds: 5 },
+            });
+        })();
         firebase.db.collection('foods')
             .onSnapshot(querySnapshot => {
                 const food = [];

@@ -5,6 +5,7 @@ import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
 import { Avatar, Card, Divider, Input } from 'react-native-elements';
 import firebase from '../../database/firebase';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 const ChangePassword = (props) => {
     const [newPassword, setNewPassword] = useState({
@@ -61,6 +62,10 @@ const ChangePassword = (props) => {
             setShow('Mật khẩu cũ không chính xác');
             setColor('red');
         }
+        else if (newPassword.cPassword.length<6 || newPassword.nPassword.length<6) {
+            setShow('Mật khẩu phải lớn hơn 6 ký tự');
+            setColor('red');
+        }
         else {
             try {
                 setShow('Bạn đã thay đổi mật khẩu thành công');
@@ -89,6 +94,7 @@ const ChangePassword = (props) => {
         )
     }
     return (
+       
         <View style={styles.container}>
             {/* Header */}
             <View style={styles.head}>
@@ -106,8 +112,11 @@ const ChangePassword = (props) => {
             </View>
 
             {/* body */}
+            <KeyboardAwareScrollView>
             <View style={styles.body}>
-                <Card>
+            
+                <Card style={{height:150}}>
+               
                     <View style={styles.inputGroup}>
                         <Input secureTextEntry={true} placeholder='Nhập mật khẩu cũ' autoCorrect={false} placeholderTextColor="gray" leftIcon={<FontAwesome name='key' size={30} color='black' />} onChangeText={(value) => handleChangeText('password', value)} />
                     </View>
@@ -117,9 +126,11 @@ const ChangePassword = (props) => {
                     <View style={styles.inputGroup}>
                         <Input secureTextEntry={true} placeholder='Xác nhận mật khẩu mới' autoCorrect={false} placeholderTextColor="gray" leftIcon={<FontAwesome name='lock' size={30} color='black' />} onChangeText={(value) => handleChangeText('nPassword', value)} />
                     </View>
-
+                   
                 </Card>
+               
             </View>
+            </KeyboardAwareScrollView>
             {/* Footer */}
 
             <View style={styles.footer}>
@@ -130,7 +141,7 @@ const ChangePassword = (props) => {
                 </View>
             </View>
         </View>
-
+       
     )
 }
 const styles = StyleSheet.create({
@@ -151,7 +162,7 @@ const styles = StyleSheet.create({
     footer: {
         flex: 2.4,
         padding: 25,
-        paddingTop: 120
+   
     },
     sAvatar: {
 

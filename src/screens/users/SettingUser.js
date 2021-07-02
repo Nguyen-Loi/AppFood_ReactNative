@@ -30,7 +30,7 @@ const SettingUser = (props) => {
         setLoading(false);
     }
     useEffect(() => {
-      
+
         getUserById(getUserId());
 
     }, [])

@@ -40,7 +40,6 @@ const DetailHistory = (props) => {
     }, [visible]);
     const _closeApp = () => {
         setVisible(!visible);
-        props.navigation.navigate('HistoryCart');
     }
     //set notification
     const [nIcon, setnIcon] = useState();
